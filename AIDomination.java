@@ -1787,45 +1787,57 @@ public class AIDomination extends AISubmissive {
 	 * find the possible elimination targets in priority order
 	 * will filter out attacks that seem too costly or if the target has no cards
 	 */
+	private country_target() {
+
+		Country target = targetCountries.get(j);
+		AttackTarget attackTarget = targets.get(target);
+		if (attackTarget == null
+				|| attackTarget.remaining == Integer.MIN_VALUE
+				|| (!attack && -attackTarget.remaining > remaining)) {
+			continue;
+		}
+		et.attackTargets.add(attackTarget);
+	
+	}
+	
+	private ordered players() {
+
+		PlayerState ps = gameState.orderedPlayers.get(i);
+		Player player2 = ps.p;
+
+		if ((player2.getCards().isEmpty() && player2.getTerritoriesOwned().size() > 1) || ps.defenseValue > gameState.me.attackValue + player.getExtraArmies()) {
+			continue;
+		}
+
+		boolean isTarget = gameState.targetPlayers.size() > 1 && gameState.targetPlayers.get(0) == player2;
+		double divisor = 1;
+		int cardCount = player2.getCards().size();
+		if ((!isIncreasingSet() || game.getNewCardState() < gameState.me.defenseValue/8) && (!attack || player2.getTerritoriesOwned().size() > 1) && !game.getCards().isEmpty() && cardCount < 3 && (game.getCardMode()==RiskGame.CARD_ITALIANLIKE_SET||(cardCount+player.getCards().size()<RiskGame.MAX_CARDS))) {
+			divisor+=(.5*Math.max(0, isIncreasingSet()?2:4 - cardCount));
+		}
+
+		if (!isTarget && ps.defenseValue > gameState.me.armies/divisor + player.getExtraArmies()) {
+			continue;
+		}
+
+		List<Country> targetCountries = player2.getTerritoriesOwned();
+		EliminationTarget et = new EliminationTarget();
+		et.ps = ps;
+		//check for sufficient troops on critical path
+		for (int j = 0; j < targetCountries.size(); j++) {
+			country_target();
+		}
+		et.target = isTarget;
+		et.allOrNone = true;
+		toEliminate.add(et);
+	}
+	
 	private List<EliminationTarget> findEliminationTargets(Map<Country, AttackTarget> targets, GameState gameState,
 														   boolean attack, int remaining) {
 		List<EliminationTarget> toEliminate = new ArrayList<EliminationTarget>();
 		for (int i = 0; i < gameState.orderedPlayers.size(); i++) {
-			PlayerState ps = gameState.orderedPlayers.get(i);
-			Player player2 = ps.p;
+			ordered_players();
 
-			if ((player2.getCards().isEmpty() && player2.getTerritoriesOwned().size() > 1) || ps.defenseValue > gameState.me.attackValue + player.getExtraArmies()) {
-				continue;
-			}
-
-			boolean isTarget = gameState.targetPlayers.size() > 1 && gameState.targetPlayers.get(0) == player2;
-			double divisor = 1;
-			int cardCount = player2.getCards().size();
-			if ((!isIncreasingSet() || game.getNewCardState() < gameState.me.defenseValue/8) && (!attack || player2.getTerritoriesOwned().size() > 1) && !game.getCards().isEmpty() && cardCount < 3 && (game.getCardMode()==RiskGame.CARD_ITALIANLIKE_SET||(cardCount+player.getCards().size()<RiskGame.MAX_CARDS))) {
-				divisor+=(.5*Math.max(0, isIncreasingSet()?2:4 - cardCount));
-			}
-
-			if (!isTarget && ps.defenseValue > gameState.me.armies/divisor + player.getExtraArmies()) {
-				continue;
-			}
-
-			List<Country> targetCountries = player2.getTerritoriesOwned();
-			EliminationTarget et = new EliminationTarget();
-			et.ps = ps;
-			//check for sufficient troops on critical path
-			for (int j = 0; j < targetCountries.size(); j++) {
-				Country target = targetCountries.get(j);
-				AttackTarget attackTarget = targets.get(target);
-				if (attackTarget == null
-						|| attackTarget.remaining == Integer.MIN_VALUE
-						|| (!attack && -attackTarget.remaining > remaining)) {
-					continue;
-				}
-				et.attackTargets.add(attackTarget);
-			}
-			et.target = isTarget;
-			et.allOrNone = true;
-			toEliminate.add(et);
 		}
 		return toEliminate;
 	}
