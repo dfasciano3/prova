@@ -1193,9 +1193,9 @@ public class AIDomination extends AISubmissive {
 	
 	protected check_condition2() {
 		boolean condition =(diff < 0 && (!attack || selection.routeRemaining[bestRoute] < 0))
-				|| (diff == 0
-				&& ((selection.attackPath[i] != null && selection.attackPath[i].getOwner() == targetPlayer)
-				|| (targetPlayer == null || selection.attackPath[bestRoute].getOwner() != targetPlayer) && start.getContinent() == targetCo))
+				|| (diff == 0)
+				&& (selection.attackPath[i] != null && selection.attackPath[i].getOwner() == targetPlayer)
+				|| ((targetPlayer == null || selection.attackPath[bestRoute].getOwner() != targetPlayer) && start.getContinent() == targetCo))
 		if (condition) {
 			bestRoute = i;
 		}
