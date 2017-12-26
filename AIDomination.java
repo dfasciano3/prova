@@ -1733,17 +1733,21 @@ public class AIDomination extends AISubmissive {
 		}
 	}
 	
-	protected game_conditons() {
-
-		if (gameState.commonThreat != null && c.getOwner() != gameState.commonThreat.p && c.getContinent().getOwner() != null) {
-			return false;
-		}
+	protected player_mission() {
 		if (player.getMission() == null && game.getCardMode() == RiskGame.CARD_ITALIANLIKE_SET && c.getOwner().getCards().size() < 4|| gameState.commonThreat != null && c.getOwner().getCards().size() <= 2) {
 			return true;
 		}
 		if (player.getMission() != null || ((attack|| isIncreasingSet()) && (c.getOwner().getCards().size() > 1 || (c.getOwner().getCards().size() == 1 && game.getCards().isEmpty())))) {
 			get_mission();
 		}
+	}
+	
+	protected game_conditons() {
+
+		if (gameState.commonThreat != null && c.getOwner() != gameState.commonThreat.p && c.getContinent().getOwner() != null) {
+			return false;
+		}
+		player_mission();
 
 	}
 	
