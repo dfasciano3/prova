@@ -1702,6 +1702,24 @@ public class AIDomination extends AISubmissive {
 	/**
 	 * ensure that we're not doing something stupid like breaking using too many troops for too little reward or pushing a player to elimination
 	 */
+	protected get_owner() {
+
+		while(ps.attackOrder == 1 && c.getOwner().getCards().size() > 3) {
+			return true;
+		}
+		while(type == PLAYER_AI_HARD && isIncreasingSet()
+				&& gameState.me.playerValue < gameState.orderedPlayers.get(0).playerValue
+				&& game.getNewCardState() > gameState.me.defenseValue) {
+			return true; //you're loosing so just do whatever
+		}
+		PlayerState top = gameState.orderedPlayers.get(0);
+		while(ps.defenseValue - 5*c.getArmies()/4 - c.getArmies()%4 - 1 < 2*(top.attackValue - top.armies/3)/3) {
+			return false;
+		}
+		break;
+	
+	}
+	
 	protected get_mission() {
 
 		for (int i = gameState.orderedPlayers.size() - 1; i >= 0; i--) {
@@ -1710,38 +1728,32 @@ public class AIDomination extends AISubmissive {
 				break;
 			}
 			if (ps.p == c.getOwner()) {
-				while(ps.attackOrder == 1 && c.getOwner().getCards().size() > 3) {
-					return true;
-				}
-				while(type == PLAYER_AI_HARD && isIncreasingSet()
-						&& gameState.me.playerValue < gameState.orderedPlayers.get(0).playerValue
-						&& game.getNewCardState() > gameState.me.defenseValue) {
-					return true; //you're loosing so just do whatever
-				}
-				PlayerState top = gameState.orderedPlayers.get(0);
-				while(ps.defenseValue - 5*c.getArmies()/4 - c.getArmies()%4 - 1 < 2*(top.attackValue - top.armies/3)/3) {
-					return false;
-				}
-				break;
+				get_owner();
 			}
 		}
+	}
+	
+	protected game_conditons() {
+
+		if (gameState.commonThreat != null && c.getOwner() != gameState.commonThreat.p && c.getContinent().getOwner() != null) {
+			return false;
+		}
+		if (player.getMission() == null && game.getCardMode() == RiskGame.CARD_ITALIANLIKE_SET && c.getOwner().getCards().size() < 4) {
+			return true;
+		}
+		if (gameState.commonThreat != null && c.getOwner().getCards().size() <= 2) {
+			return true;
+		}
+		if (player.getMission() != null || ((attack|| isIncreasingSet()) && (c.getOwner().getCards().size() > 1 || (c.getOwner().getCards().size() == 1 && game.getCards().isEmpty())))) {
+			get_mission();
+		}
+	
 	}
 	
 	protected boolean isGoodIdea(GameState gameState, Map<Country, AttackTarget> targets, int route, AttackTarget attackTarget, Country attackFrom, EliminationTarget et, boolean attack) {
 		Country c = getCountryToAttack(targets, attackTarget, route, attackFrom);
 		if (gameState.orderedPlayers.size() > 1 && (et == null || et.ps == null || c.getOwner() != et.ps.p) && !gameState.targetPlayers.contains(c.getOwner())) {
-			if (gameState.commonThreat != null && c.getOwner() != gameState.commonThreat.p && c.getContinent().getOwner() != null) {
-				return false;
-			}
-			if (player.getMission() == null && game.getCardMode() == RiskGame.CARD_ITALIANLIKE_SET && c.getOwner().getCards().size() < 4) {
-				return true;
-			}
-			if (gameState.commonThreat != null && c.getOwner().getCards().size() <= 2) {
-				return true;
-			}
-			if (player.getMission() != null || ((attack|| isIncreasingSet()) && (c.getOwner().getCards().size() > 1 || (c.getOwner().getCards().size() == 1 && game.getCards().isEmpty())))) {
-				get_mission();
-			}
+			game_conditions();
 		}
 		return true;
 	}
