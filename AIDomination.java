@@ -2216,7 +2216,7 @@ public class AIDomination extends AISubmissive {
 		for (Iterator<AttackTarget> i = targets.values().iterator(); i.hasNext();) {
 			attack_target();
 		}
-		if_attack_target();
+		    if_attack_target();
 		
 		return Math.max(isBorder?game.getMaxDefendDice():0, forwardMin);
 	}
@@ -2363,6 +2363,22 @@ public class AIDomination extends AISubmissive {
 	 * Will roll the maximum, but checks to see if the attack is still the
 	 * best plan every 3rd roll
 	 */
+	public if_check_plan(){
+
+		String result = plan(true);
+		//TODO: rewrite to not use string parsing
+		if (result.equals("endattack")) {
+			return "retreat";
+		}
+		StringTokenizer st = new StringTokenizer(result);
+		st.nextToken();
+		if (game.getAttacker().getColor() != Integer.parseInt(st.nextToken())
+				|| game.getDefender().getColor() != Integer.parseInt(st.nextToken())) {
+			return "retreat";
+		}
+	
+	}
+	
 	public String getRoll() {
 		int n=game.getAttacker().getArmies() - 1;
 		int m=game.getDefender().getArmies();
@@ -2373,17 +2389,7 @@ public class AIDomination extends AISubmissive {
 
 		//spot check the plan
 		if (type != AIDomination.PLAYER_AI_EASY && (game.getBattleRounds()%3 == 2 || (game.getBattleRounds() > 0 && (n - Math.min(m, game.getMaxDefendDice()) <= 0)))) {
-			String result = plan(true);
-			//TODO: rewrite to not use string parsing
-			if (result.equals("endattack")) {
-				return "retreat";
-			}
-			StringTokenizer st = new StringTokenizer(result);
-			st.nextToken();
-			if (game.getAttacker().getColor() != Integer.parseInt(st.nextToken())
-					|| game.getDefender().getColor() != Integer.parseInt(st.nextToken())) {
-				return "retreat";
-			}
+			if_check_plan();
 		}
 		return "roll " + Math.min(3, n);
 	}
