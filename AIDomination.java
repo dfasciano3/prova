@@ -1191,16 +1191,21 @@ public class AIDomination extends AISubmissive {
 	}
 	}
 	
-    protected check_otherattack(){
-
-    	check_condition1();			
-
+	protected check_condition2() {
 		if ((diff < 0 && (!attack || selection.routeRemaining[bestRoute] < 0))
 				|| (diff == 0
 				&& ((selection.attackPath[i] != null && selection.attackPath[i].getOwner() == targetPlayer)
 				|| (targetPlayer == null || selection.attackPath[bestRoute].getOwner() != targetPlayer) && start.getContinent() == targetCo))) {
 			bestRoute = i;
 		}
+	}
+	
+    protected check_otherattack(){
+
+    	check_condition1();			
+
+    	check_condition2();
+    	
 	}
 	
 	protected int findBestRoute(List<Country> attackable, GameState gameState,
