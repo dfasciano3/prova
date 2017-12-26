@@ -1702,6 +1702,31 @@ public class AIDomination extends AISubmissive {
 	/**
 	 * ensure that we're not doing something stupid like breaking using too many troops for too little reward or pushing a player to elimination
 	 */
+	protected get_mission() {
+
+		for (int i = gameState.orderedPlayers.size() - 1; i >= 0; i--) {
+			PlayerState ps = gameState.orderedPlayers.get(i);
+			if (ps.playerValue >= gameState.me.playerValue) {
+				break;
+			}
+			if (ps.p == c.getOwner()) {
+				while(ps.attackOrder == 1 && c.getOwner().getCards().size() > 3) {
+					return true;
+				}
+				while(type == PLAYER_AI_HARD && isIncreasingSet()
+						&& gameState.me.playerValue < gameState.orderedPlayers.get(0).playerValue
+						&& game.getNewCardState() > gameState.me.defenseValue) {
+					return true; //you're loosing so just do whatever
+				}
+				PlayerState top = gameState.orderedPlayers.get(0);
+				while(ps.defenseValue - 5*c.getArmies()/4 - c.getArmies()%4 - 1 < 2*(top.attackValue - top.armies/3)/3) {
+					return false;
+				}
+				break;
+			}
+		}
+	}
+	
 	protected boolean isGoodIdea(GameState gameState, Map<Country, AttackTarget> targets, int route, AttackTarget attackTarget, Country attackFrom, EliminationTarget et, boolean attack) {
 		Country c = getCountryToAttack(targets, attackTarget, route, attackFrom);
 		if (gameState.orderedPlayers.size() > 1 && (et == null || et.ps == null || c.getOwner() != et.ps.p) && !gameState.targetPlayers.contains(c.getOwner())) {
@@ -1715,27 +1740,7 @@ public class AIDomination extends AISubmissive {
 				return true;
 			}
 			if (player.getMission() != null || ((attack|| isIncreasingSet()) && (c.getOwner().getCards().size() > 1 || (c.getOwner().getCards().size() == 1 && game.getCards().isEmpty())))) {
-				for (int i = gameState.orderedPlayers.size() - 1; i >= 0; i--) {
-					PlayerState ps = gameState.orderedPlayers.get(i);
-					if (ps.playerValue >= gameState.me.playerValue) {
-						break;
-					}
-					if (ps.p == c.getOwner()) {
-						while(ps.attackOrder == 1 && c.getOwner().getCards().size() > 3) {
-							return true;
-						}
-						while(type == PLAYER_AI_HARD && isIncreasingSet()
-								&& gameState.me.playerValue < gameState.orderedPlayers.get(0).playerValue
-								&& game.getNewCardState() > gameState.me.defenseValue) {
-							return true; //you're loosing so just do whatever
-						}
-						PlayerState top = gameState.orderedPlayers.get(0);
-						while(ps.defenseValue - 5*c.getArmies()/4 - c.getArmies()%4 - 1 < 2*(top.attackValue - top.armies/3)/3) {
-							return false;
-						}
-						break;
-					}
-				}
+				get_mission();
 			}
 		}
 		return true;
