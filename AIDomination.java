@@ -1138,77 +1138,6 @@ public class AIDomination extends AISubmissive {
 	/**
 	 * Find the best route (the index in attackable) for the given target selection
 	 */
-	protected diff_conditions() {
-		if (diff < 0 && !path1.isEmpty()) {
-			HashMap<Country, AttackTarget> specificTargets = new HashMap<Country, AttackTarget>();
-			searchTargets(specificTargets, start, start.getArmies(), 0, 1, player.getExtraArmies(), attack, Collections.EMPTY_SET, path1, gameState);
-			int forwardMin = getMinRemaining(specificTargets, start.getArmies(), false, gameState);
-			if (forwardMin > -diff) {
-				bestRoute = i;
-				bestPath = path;
-			}
-		} else if (diff > 0 && path1.isEmpty() && start.getArmies() >= 3) {
-			bestRoute = i;
-			bestPath = path;
-		}
-	}
-	
-	protected check_attackline() {
-
-		HashSet<Country> path = getPath(selection, targets, i, start);
-		if (bestPath == null) {
-			bestPath = getPath(selection, targets, bestRoute, attackable.get(bestRoute));
-		}
-		HashSet<Country> path1 = new HashSet<Country>(path);
-		for (Iterator<Country> iter = path1.iterator(); iter.hasNext();) {
-			Country attacked = iter.next();
-			if (!bestPath.contains(attacked) || attacked.getArmies() > 4) {
-				iter.remove();
-			}
-		}
-		diff_conditions();
-		
-		continue;
-	}
-	
-	protected adjusted_cost() {
-		if (adjustedCost1 < adjustedCost2) {
-			continue;
-		}
-		if (adjustedCost2 < adjustedCost1) {
-			bestRoute = i;
-			continue;
-		}
-	}
-	
-	protected check_condition1() {
-		//range planning during attack is probably too greedy, we try to counter that here
-		if (diff == 0 && attack) {
-		Country start1 = attackable.get(bestRoute);
-		int adjustedCost1 = start1.getArmies() - selection.routeRemaining[bestRoute];
-		int adjustedCost2 = start.getArmies() - selection.routeRemaining[i];
-		adjusted_cost();
-	}
-	}
-	
-	protected check_condition2() {
-		boolean condition =(diff < 0 && (!attack || selection.routeRemaining[bestRoute] < 0))
-				|| (diff == 0)
-				&& (selection.attackPath[i] != null && selection.attackPath[i].getOwner() == targetPlayer)
-				|| ((targetPlayer == null || selection.attackPath[bestRoute].getOwner() != targetPlayer) && start.getContinent() == targetCo))
-		if (condition) {
-			bestRoute = i;
-		}
-	}
-	
-    protected check_otherattack(){
-
-    	check_condition1();			
-
-    	check_condition2();
-    	
-	}
-	
 	protected int findBestRoute(List<Country> attackable, GameState gameState,
 								boolean attack, Continent targetCo, AttackTarget selection, Player targetPlayer, Map<Country, AttackTarget> targets) {
 		int bestRoute = 0;
@@ -1227,10 +1156,52 @@ public class AIDomination extends AISubmissive {
 
 			//short sighted check to see if we're cutting off an attack line
 			if (attack && selection.routeRemaining[i] >= 0 && diff != 0 && selection.routeRemaining[bestRoute] >= 0) {
-				check_attackline();
+				HashSet<Country> path = getPath(selection, targets, i, start);
+				if (bestPath == null) {
+					bestPath = getPath(selection, targets, bestRoute, attackable.get(bestRoute));
+				}
+				HashSet<Country> path1 = new HashSet<Country>(path);
+				for (Iterator<Country> iter = path1.iterator(); iter.hasNext();) {
+					Country attacked = iter.next();
+					if (!bestPath.contains(attacked) || attacked.getArmies() > 4) {
+						iter.remove();
+					}
+				}
+				if (diff < 0 && !path1.isEmpty()) {
+					HashMap<Country, AttackTarget> specificTargets = new HashMap<Country, AttackTarget>();
+					searchTargets(specificTargets, start, start.getArmies(), 0, 1, player.getExtraArmies(), attack, Collections.EMPTY_SET, path1, gameState);
+					int forwardMin = getMinRemaining(specificTargets, start.getArmies(), false, gameState);
+					if (forwardMin > -diff) {
+						bestRoute = i;
+						bestPath = path;
+					}
+				} else if (diff > 0 && path1.isEmpty() && start.getArmies() >= 3) {
+					bestRoute = i;
+					bestPath = path;
+				}
+				continue;
 			}
-			check_otherattack();
-			
+
+			if (diff == 0 && attack) {
+				//range planning during attack is probably too greedy, we try to counter that here
+				Country start1 = attackable.get(bestRoute);
+				int adjustedCost1 = start1.getArmies() - selection.routeRemaining[bestRoute];
+				int adjustedCost2 = start.getArmies() - selection.routeRemaining[i];
+				if (adjustedCost1 < adjustedCost2) {
+					continue;
+				}
+				if (adjustedCost2 < adjustedCost1) {
+					bestRoute = i;
+					continue;
+				}
+			}
+
+			if ((diff < 0 && (!attack || selection.routeRemaining[bestRoute] < 0))
+					|| (diff == 0
+					&& ((selection.attackPath[i] != null && selection.attackPath[i].getOwner() == targetPlayer)
+					|| (targetPlayer == null || selection.attackPath[bestRoute].getOwner() != targetPlayer) && start.getContinent() == targetCo))) {
+				bestRoute = i;
+			}
 		}
 		if (selection.routeRemaining[bestRoute] == Integer.MIN_VALUE) {
 			return -1;
