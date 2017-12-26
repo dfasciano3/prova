@@ -1251,28 +1251,38 @@ public class AIDomination extends AISubmissive {
 	 * Simplistic fortification
 	 * TODO: should be based upon pressure/continent value
 	 */
+	protected country_borders2() {
+
+		Country c = borders.get(i);
+		//this is a hotspot, at least match the immediate troop level
+		int diff = additionalTroopsNeeded(c, gs);
+		if (diff > 0) {
+			return getPlaceCommand(c, Math.min(player.getExtraArmies(), diff));
+		}
+		if (!minimal && -diff < c.getArmies() + 2) {
+			return getPlaceCommand(c, Math.min(player.getExtraArmies(), c.getArmies() + 2 + diff));
+		}
+	
+	}
+	
+	protected country_borders1() {
+		Country c = borders.get(i);
+		if (c.getArmies() < min) {
+			return getPlaceCommand(c, min - c.getArmies());
+		}
+	}
+	
 	protected String fortify(GameState gs, List<Country> attackable, boolean minimal, List<Country> borders) {
 		int min = Math.max(game.getMaxDefendDice(), getMinPlacement());
 		//at least put 2, which increases defensive odds
 		for (int i = 0; i < borders.size(); i++) {
-			Country c = borders.get(i);
-			if (c.getArmies() < min) {
-				return getPlaceCommand(c, min - c.getArmies());
-			}
+			country_borders1();
 		}
 		if (minimal && (!game.getSetupDone() || (isIncreasingSet() && player.getCards().size() > 1))) {
 			return null;
 		}
 		for (int i = 0; i < borders.size(); i++) {
-			Country c = borders.get(i);
-			//this is a hotspot, at least match the immediate troop level
-			int diff = additionalTroopsNeeded(c, gs);
-			if (diff > 0) {
-				return getPlaceCommand(c, Math.min(player.getExtraArmies(), diff));
-			}
-			if (!minimal && -diff < c.getArmies() + 2) {
-				return getPlaceCommand(c, Math.min(player.getExtraArmies(), c.getArmies() + 2 + diff));
-			}
+			country_borders2();
 		}
 		return null;
 	}
