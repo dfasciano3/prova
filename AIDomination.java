@@ -1183,17 +1183,17 @@ public class AIDomination extends AISubmissive {
 	
 	protected check_condition1() {
 		//range planning during attack is probably too greedy, we try to counter that here
+		if (diff == 0 && attack) {
 		Country start1 = attackable.get(bestRoute);
 		int adjustedCost1 = start1.getArmies() - selection.routeRemaining[bestRoute];
 		int adjustedCost2 = start.getArmies() - selection.routeRemaining[i];
 		adjusted_cost();
 	}
+	}
 	
     protected check_otherattack(){
 
-		if (diff == 0 && attack) {
-			check_condition1();
-		}
+    	check_condition1();			
 
 		if ((diff < 0 && (!attack || selection.routeRemaining[bestRoute] < 0))
 				|| (diff == 0
