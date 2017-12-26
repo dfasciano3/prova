@@ -1290,29 +1290,40 @@ public class AIDomination extends AISubmissive {
 	/**
 	 * Simplistic (immediate) guess at the additional troops needed.
 	 */
+	protected country_v() {
+		
+		Country n = v.get(j);
+		if (n.getOwner() != player) {
+			if (minimal) {
+				needed = Math.max(needed, n.getArmies());
+			} else {
+				needed += (n.getArmies() -1);
+			}
+		}
+	}
+	
+	protected country_contains() {
+
+		if (gs.me.owned.contains(cont.getContinent()) && needed > 0) {
+			needed += cont.getContinent().getArmyValue();
+		} else {
+			needed = Math.max(needed, cont.getContinent().getArmyValue()/2);
+		}
+		break;
+	
+	}
+	
 	protected int additionalTroopsNeeded(Country c, GameState gs) {
 		int needed = 0;
 		boolean minimal = !gs.capitals.contains(c);
 		List<Country> v = c.getIncomingNeighbours();
 		for (int j = 0; j < v.size(); j++) {
-			Country n = v.get(j);
-			if (n.getOwner() != player) {
-				if (minimal) {
-					needed = Math.max(needed, n.getArmies());
-				} else {
-					needed += (n.getArmies() -1);
-				}
-			}
+			country_v();
 		}
 		if (!isIncreasingSet() && type != PLAYER_AI_EASY && gs.commonThreat == null && gs.me.playerValue < gs.orderedPlayers.get(0).playerValue) {
 			for (Country cont : c.getCrossContinentNeighbours()) {
 				if (!gs.me.owned.contains(c.getContinent()) && cont.getArmies() < cont.getContinent().getArmyValue()) {
-					if (gs.me.owned.contains(cont.getContinent()) && needed > 0) {
-						needed += cont.getContinent().getArmyValue();
-					} else {
-						needed = Math.max(needed, cont.getContinent().getArmyValue()/2);
-					}
-					break;
+					country_contains();
 				}
 			}
 		}
