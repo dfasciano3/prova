@@ -1799,12 +1799,9 @@ public class AIDomination extends AISubmissive {
 		et.attackTargets.add(attackTarget);
 	
 	}
-	
-	private ordered players() {
 
-		PlayerState ps = gameState.orderedPlayers.get(i);
-		Player player2 = ps.p;
-
+	private if_orderedplayers() {
+		
 		if ((player2.getCards().isEmpty() && player2.getTerritoriesOwned().size() > 1) || ps.defenseValue > gameState.me.attackValue + player.getExtraArmies()) {
 			continue;
 		}
@@ -1819,6 +1816,14 @@ public class AIDomination extends AISubmissive {
 		if (!isTarget && ps.defenseValue > gameState.me.armies/divisor + player.getExtraArmies()) {
 			continue;
 		}
+	}
+	
+	private ordered_players() {
+
+		PlayerState ps = gameState.orderedPlayers.get(i);
+		Player player2 = ps.p;
+		
+		if_orderedplayers();
 
 		List<Country> targetCountries = player2.getTerritoriesOwned();
 		EliminationTarget et = new EliminationTarget();
