@@ -1738,14 +1738,8 @@ public class AIDomination extends AISubmissive {
 		if (gameState.commonThreat != null && c.getOwner() != gameState.commonThreat.p && c.getContinent().getOwner() != null) {
 			return false;
 		}
-		if (player.getMission() == null && game.getCardMode() == RiskGame.CARD_ITALIANLIKE_SET && c.getOwner().getCards().size() < 4) {
+		if (player.getMission() == null && game.getCardMode() == RiskGame.CARD_ITALIANLIKE_SET && c.getOwner().getCards().size() < 4|| gameState.commonThreat != null && c.getOwner().getCards().size() <= 2) {
 			return true;
-		}
-		if (gameState.commonThreat != null && c.getOwner().getCards().size() <= 2) {
-			return true;
-		}
-		if (player.getMission() != null || ((attack|| isIncreasingSet()) && (c.getOwner().getCards().size() > 1 || (c.getOwner().getCards().size() == 1 && game.getCards().isEmpty())))) {
-			get_mission();
 		}
 	
 	}
@@ -1754,6 +1748,9 @@ public class AIDomination extends AISubmissive {
 		Country c = getCountryToAttack(targets, attackTarget, route, attackFrom);
 		if (gameState.orderedPlayers.size() > 1 && (et == null || et.ps == null || c.getOwner() != et.ps.p) && !gameState.targetPlayers.contains(c.getOwner())) {
 			game_conditions();
+			if (player.getMission() != null || ((attack|| isIncreasingSet()) && (c.getOwner().getCards().size() > 1 || (c.getOwner().getCards().size() == 1 && game.getCards().isEmpty())))) {
+				get_mission();
+			}
 		}
 		return true;
 	}
